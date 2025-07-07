@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Boids</title>
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+
+<body>
+  <div class="title">Flocking Boids</div>
+
+  <canvas id="boids-canvas"></canvas>
+
+  <div class="boid-controls">
+
+    <div class="sliders-group">
+
+      <div class="slider-wrap">
+        <div class="slider-range">
+          <div>off</div>
+          <input type="range" name="cohesion" id="slider-cohesion" step="0.1" min="0" max="6" value="4">
+          <div>max</div>
+        </div>
+        <div class="slider-label">Cohesion</div>
+      </div>
+
+      <div class="slider-wrap">
+        <div class="slider-range">
+          <div>off</div>
+          <input type="range" name="repulsion" id="slider-repulsion" step="0.1" min="0" max="4" value="1.2">
+          <div>max</div>
+        </div>
+        <div class="slider-label">Repulsion</div>
+      </div>
+
+      <div class="slider-wrap">
+        <div class="slider-range">
+          <div>off</div>
+          <input type="range" name="alignment" id="slider-alignment" step="0.1" min="0" max="6" value="3">
+          <div>max</div>
+        </div>
+        <div class="slider-label">Alignment</div>
+      </div>
+
+      <div class="slider-wrap">
+        <div class="slider-range">
+          <div>off</div>
+          <input type="range" name="visibility" id="slider-visibility" step="0.1" min="0" max="100" value="72">
+          <div>max</div>
+        </div>
+        <div class="slider-label">Visibility</div>
+      </div>
+
+    </div>
+
+    <button id="reset">↺</button>
+
+  </div>
+  <div id="debug-output" class="debug-output">
+    INJECT_RAW_VALUES
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
