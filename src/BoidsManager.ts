@@ -1,4 +1,4 @@
-import { Boid } from "./Boids";
+import { Boid } from "./Boid";
 import { Vector2D } from "./Vector2D";
 
 export function boidsCreator(numOfBalls: number, radius: number, canvas: HTMLCanvasElement): Boid[] {

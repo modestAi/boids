@@ -1,143 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Boids</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Interactive boids simulation demonstrating flocking behavior." />
-        <meta property="og:title" content="Boids Simulation" />
-        <meta property="og:description" content="Explore how simple rules lead to complex flocking behavior." />
-        <meta property="og:image" content="/preview.png" />
-        <meta property="og:type" content="website" />
-        <link rel="icon" href="/drawing.svg" type="image/svg+xml" />
-        <link rel="stylesheet" href="src/styles/style.css" />
-    </head>
 
-    <body>
-        <header>
-            <img src="/boid_icon_1.svg" alt="Boid logo" width="32" height="32" />
-            <h1 class="title">
-                Flocking
-                <a target="_blank" href="https://en.wikipedia.org/wiki/Boids">
-                    Boids
-                </a>
-            </h1>
-        </header>
+<head>
+  <meta charset="UTF-8" />
+  <title>Boids</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Interactive boids simulation demonstrating flocking behavior." />
+  <meta property="og:title" content="Boids Simulation" />
+  <meta property="og:description" content="Explore how simple rules lead to complex flocking behavior." />
+  <meta property="og:image" content="/preview.png" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="/drawing.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="src/styles/style.css" />
+</head>
 
-        <div class="canvas-container">
-            <canvas id="boids-canvas"></canvas>
-            <p>Flocking Behavior Visualizer</p>
+<body>
+  <header>
+    <img src="/boid_icon_1.svg" alt="Boid logo" width="32" height="32" />
+    <h1 class="title"> Flocking <a target="_blank" href="https://en.wikipedia.org/wiki/Boids"> Boids </a>
+    </h1>
+  </header>
+
+  <main>
+    <div class="canvas-container">
+      <canvas id="boids-canvas"></canvas>
+      <p>Flocking Behavior Visualizer</p>
+    </div>
+    <div class="boid-controller-wrapper">
+      <div class="first-group-wrapper">
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">off</div>
+            <input type="range" id="slider-cohesion" step="0.1" min="0" max="10" value="4" />
+            <div class="right-label">max</div>
+          </div>
+          <label class="slider-label" for="slider-cohesion">cohesion</label>
         </div>
-
-        <div class="boid-controller-wrapper">
-            <div class="first-group-wrapper">
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">off</div>
-                        <input type="range" id="slider-cohesion" step="0.1" min="0" max="10" value="4" />
-                        <div class="right-label">max</div>
-                    </div>
-                    <label class="slider-label" for="slider-cohesion">cohesion</label>
-                </div>
-
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">off</div>
-                        <input type="range" id="slider-repulsion" step="0.1" min="0" max="4" value="1.5" />
-                        <div class="right-label">max</div>
-                    </div>
-                    <label class="slider-label" for="slider-repulsion">repulsion</label>
-                </div>
-
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">off</div>
-                        <input type="range" id="slider-alignment" step="0.1" min="0" max="6" value="3" />
-                        <div class="right-label">max</div>
-                    </div>
-                    <label class="slider-label" for="slider-alignment">alignment</label>
-                </div>
-
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">off</div>
-                        <input type="range" id="slider-visibility" step="0.1" min="0" max="100" value="62" />
-                        <div class="right-label">max</div>
-                    </div>
-                    <label class="slider-label" for="slider-visibility">visibility</label>
-                </div>
-
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">min</div>
-                        <input type="range" id="slider-acc" step="0.1" min="0.1" max="5" value="1" />
-                        <div class="right-label">max</div>
-                    </div>
-                    <label class="slider-label" for="slider-acc">acc. cap</label>
-                </div>
-
-                <div class="first-group-element-wrapper">
-                    <div class="slider-range">
-                        <div class="left-label">0%</div>
-                        <input type="range" id="slider-opacity" step="0.1" min="0" max="1" value="0.75" />
-                        <div class="right-label">100%</div>
-                    </div>
-                    <label class="slider-label" for="slider-opacity">opacity</label>
-                </div>
-
-                <div id="color-wrap" class="first-group-element-wrapper">
-                    <input type="color" id="color" value="#12E988" />
-                    <label class="slider-label" for="color">color</label>
-                </div>
-
-                <div id="toggle-wrap" class="first-group-element-wrapper">
-                    <label class="toggle-label">
-                        <input type="checkbox" id="path" />
-                        <span></span>
-                        show path
-                    </label>
-                </div>
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">off</div>
+            <input type="range" id="slider-repulsion" step="0.1" min="0" max="4" value="1.5" />
+            <div class="right-label">max</div>
+          </div>
+          <label class="slider-label" for="slider-repulsion">repulsion</label>
+        </div>
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">off</div>
+            <input type="range" id="slider-alignment" step="0.1" min="0" max="6" value="3" />
+            <div class="right-label">max</div>
+          </div>
+          <label class="slider-label" for="slider-alignment">alignment</label>
+        </div>
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">off</div>
+            <input type="range" id="slider-visibility" step="0.1" min="0" max="100" value="62" />
+            <div class="right-label">max</div>
+          </div>
+          <label class="slider-label" for="slider-visibility">visibility</label>
+        </div>
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">min</div>
+            <input type="range" id="slider-acc" step="0.1" min="0.1" max="5" value="1" />
+            <div class="right-label">max</div>
+          </div>
+          <label class="slider-label" for="slider-acc">acc. cap</label>
+        </div>
+        <div class="first-group-element-wrapper">
+          <div class="slider-range">
+            <div class="left-label">0%</div>
+            <input type="range" id="slider-opacity" step="0.1" min="0" max="1" value="0.75" />
+            <div class="right-label">100%</div>
+          </div>
+          <label class="slider-label" for="slider-opacity">opacity</label>
+        </div>
+        <div id="color-wrap" class="first-group-element-wrapper">
+          <input type="color" id="color" value="#12E988" />
+          <label class="slider-label" for="color">color</label>
+        </div>
+        <div id="toggle-wrap" class="first-group-element-wrapper">
+          <label class="toggle-label">
+            <input type="checkbox" id="path" />
+            <span></span> show path </label>
+        </div>
+      </div>
+      <div class="second-group-wrapper">
+        <form id="boids-form" action="">
+          <div class="fields-wrapper">
+            <div class="input-field">
+              <input type="number" min="1" max="8" id="boid-size" value="4" />
+              <label for="boid-size">size</label>
             </div>
-
-            <div class="second-group-wrapper">
-                <form id="boids-form" action="">
-                    <div class="fields-wrapper">
-                        <div class="input-field">
-                            <input type="number" min="1" max="8" id="boid-size" value="4" />
-                            <label for="boid-size">size</label>
-                        </div>
-
-                        <div class="input-field">
-                            <input type="number" min="1" max="500" id="boids-number" value="75" />
-                            <label for="boids-number">entity </label>
-                        </div>
-                    </div>
-
-                    <button id="apply">Apply</button>
-                </form>
-
-                <button id="reset">
-                    <span id="reset-span-txt">↺</span>
-                </button>
+            <div class="input-field">
+              <input type="number" min="1" max="250" id="boids-number" value="75" />
+              <label for="boids-number">entity </label>
             </div>
-        </div>
-        <br />
-        <br />
-        <br />
-        <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
-        <div id="debug-output" class="debug-output">
-            INJECT_RAW_VALUES
-        </div>
-        <br />
-        <footer class="footer">
-            <p>Made with</p>
-            <span>&#x2764;</span>
-            <p>by</p>
-            <a href="https://github.com/modestAi" target="_blank" rel="noopener noreferrer">
-                modestAi
-            </a>
-        </footer>
+          </div>
+          <button id="apply">Apply</button>
+        </form>
+        <button id="reset">
+          <span id="reset-span-txt">↺</span>
+        </button>
+      </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
+    <div id="debug-output" class="debug-output"> INJECT_RAW_VALUES </div>
+    <br />
+  </main>
+  <footer class="footer">
+    <p>Made with</p>
+    <span>&#x2764;</span>
+    <p>by</p>
+    <a href="https://github.com/modestAi" target="_blank" rel="noopener noreferrer"> modestAi </a>
+  </footer>
+  <script type="module" src="/src/main.ts"></script>
+</body>
 
-        <script type="module" src="/src/main.ts"></script>
-    </body>
 </html>

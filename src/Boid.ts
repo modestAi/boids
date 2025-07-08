@@ -3,15 +3,19 @@ import { Vector2D } from "./Vector2D";
 export class Boid {
 
   MIN_SPEED = 300;
-  MAX_ACCELERATION = 250;
-  COHESION_FACTOR: number = 0;
-  ALIGNMENT_FACTOR: number = 0;
-  REPULSION_FACTOR: number = 0;
-  VISIBILITY_FACTOR: number = 0;
+  MAX_ACCELERATION = 260;
+
+  COHESION_FACTOR = 0;
+  ALIGNMENT_FACTOR = 0
+  REPULSION_FACTOR = 0;
+  VISIBILITY_FACTOR = 0;
   VISIBILITY_RADIUS;
   MAX_SPEED = 400;
   acc_cap_multiplier = 1;
   WALL_REPULSION_FORCE = 70;
+  POS_BUFFER_CAPACITY = 50;
+
+  pos_buffer: Vector2D[] = [];
 
   pos: Vector2D = new Vector2D();
   vel: Vector2D = new Vector2D();
@@ -46,7 +50,8 @@ export class Boid {
     visibility_input: number = 1,
     acc_multiplier: number = 1,
     color: string,
-    opacity: number = 0.75
+    opacity: number = 0.75,
+    show_path: boolean
   ) {
 
     //! Initialize Constants with user input
@@ -62,6 +67,8 @@ export class Boid {
     //! use  prev. because history is tracked by vel vec.
     this.acc.x = 0;
     this.acc.y = 0;
+
+
 
     //!Handle Wall Physics
     this.repelWall();
@@ -89,6 +96,8 @@ export class Boid {
     ctx.fillStyle = colorWithOpacity;
     ctx.fill();
 
+    this.manageTrail(ctx, show_path);
+
     return {
       cohesion_v: this.COHESION_FACTOR,
       repulsion_v: this.REPULSION_FACTOR,
@@ -97,6 +106,26 @@ export class Boid {
       acc_cap_multiplier: this.MAX_ACCELERATION,
       color_v: colorWithOpacity,
     };
+
+  }
+
+  private manageTrail(ctx: CanvasRenderingContext2D, show_path: boolean) {
+
+    if (this.pos_buffer.length >= this.POS_BUFFER_CAPACITY) this.pos_buffer.shift();
+    else this.pos_buffer.push(new Vector2D(this.pos.x, this.pos.y));
+
+    if (show_path) {
+      this.pos_buffer.forEach((p, i) => {
+        if (i > 10) {
+          let lastPos = this.pos_buffer[i - 1];
+          ctx.beginPath();
+          ctx.moveTo(lastPos.x, lastPos.y);
+          ctx.lineTo(p.x, p.y);
+          ctx.strokeStyle = reduceOpacity({ r: 224, g: 23, b: 123 }, 1, i / 1000);
+          ctx.stroke();
+        }
+      });
+    }
   }
 
   setConstants() {
@@ -269,4 +298,14 @@ function hexColToRgbCol(hexCol: string): rgb {
   const green = parseInt(hexCol.substring(3, 5), 16);
   const blue = parseInt(hexCol.substring(5, 7), 16);
   return { r: red, g: green, b: blue };
+}
+
+function reduceOpacity(val: rgb, opacity: number, subFactor: number) {
+
+  const { r, g, b } = val;
+  const a = opacity - subFactor;
+
+
+  return `rgba(${[r, g, b, a].join(",")})`;
+
 }
