@@ -7,14 +7,23 @@ const cohesion = document.getElementById("slider-cohesion") as HTMLInputElement;
 const repulsion = document.getElementById("slider-repulsion") as HTMLInputElement;
 const alignment = document.getElementById("slider-alignment") as HTMLInputElement;
 const visibility = document.getElementById("slider-visibility") as HTMLInputElement;
-const debugSection = document.getElementById("debug-output") as HTMLDivElement;
+const color_selector = document.getElementById("color") as HTMLInputElement;
+const opacity = document.getElementById("slider-opacity") as HTMLInputElement;
+
+const acc_cap = document.getElementById("slider-acc") as HTMLButtonElement;
 const reset = document.getElementById("reset") as HTMLButtonElement;
+
+
+const debugSection = document.getElementById("debug-output") as HTMLDivElement;
 
 // Resize canvas properly
 const rect = canvas.getBoundingClientRect();
-canvas.width = rect.width * devicePixelRatio;
-canvas.height = rect.height * devicePixelRatio;
-ctx?.scale(devicePixelRatio, devicePixelRatio);
+{
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx?.scale(devicePixelRatio, devicePixelRatio);
+}
+
 
 // Debug value type
 type DebugValues = {
@@ -22,16 +31,21 @@ type DebugValues = {
   repulsion_v: number;
   alignment_v: number;
   visibility_v: number;
+  acc_cap_multiplier: number;
+  color_v: string;
 };
 
-const BOID_RADIUS = 2;
+const BOID_RADIUS = 3;
 const NO_OF_BOIDS = 100;
 
 export const boids = boidsCreator(NO_OF_BOIDS, BOID_RADIUS, canvas);
 
 let lastTime: DOMHighResTimeStamp = 0;
 
+let color_string = color_selector.value;
+
 function animate(currentTime: DOMHighResTimeStamp) {
+
   if (lastTime === 0) {
     lastTime = currentTime;
     requestAnimationFrame(animate);
@@ -48,6 +62,9 @@ function animate(currentTime: DOMHighResTimeStamp) {
   const repulsion_value = parseFloat(repulsion.value);
   const alignment_value = parseFloat(alignment.value);
   const visibility_value = parseFloat(visibility.value);
+  const acc_cap_multiplier = parseFloat(acc_cap.value);
+  const opacity_value = parseFloat(opacity.value);
+
 
   // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -55,18 +72,30 @@ function animate(currentTime: DOMHighResTimeStamp) {
   let debugVals: DebugValues | undefined;
 
   boids.forEach((boid, i) => {
-    const vals = boid.update(ctx, deltaT, cohersion_value, repulsion_value, alignment_value, visibility_value);
+    const vals = boid.update(
+      ctx,
+      deltaT,
+      cohersion_value,
+      repulsion_value,
+      alignment_value,
+      visibility_value,
+      acc_cap_multiplier,
+      color_string,
+      opacity_value
+    );
     if (i === 0) debugVals = vals;
   });
 
   // Display debug info
   if (debugVals) {
-    const { cohesion_v, repulsion_v, alignment_v, visibility_v } = debugVals;
+    const { cohesion_v, repulsion_v, alignment_v, visibility_v, color_v } = debugVals;
     debugSection.innerHTML = `
       cohesion_factor : ${cohesion_v.toFixed(2)}<br>
       repulsion_factor : ${repulsion_v.toFixed(2)}<br>
       alignment_factor : ${alignment_v.toFixed(2)}<br>
-      visibility_radius : ${visibility_v.toFixed(2)} px
+      visibility_radius : ${visibility_v.toFixed(2)}px<br>
+      acc_cap_multiplier : ${acc_cap_multiplier.toFixed(2)}
+      color_v = ${color_v} ;
     `;
   }
 
@@ -78,5 +107,8 @@ reset.addEventListener("click", (e) => {
   window.location.reload();
 });
 
-requestAnimationFrame(animate);
+color_selector.addEventListener('input', (_) => {
+  color_string = color_selector.value;
+})
 
+requestAnimationFrame(animate);

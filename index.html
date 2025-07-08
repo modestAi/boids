@@ -12,55 +12,130 @@
 
   <canvas id="boids-canvas"></canvas>
 
-  <div class="boid-controls">
+  <div class="boid-controller-wrapper">
 
-    <div class="sliders-group">
+    <div class="first-group-wrapper">
 
-      <div class="slider-wrap">
+      <div class="first-group-element-wrapper">
         <div class="slider-range">
-          <div>off</div>
-          <input type="range" name="cohesion" id="slider-cohesion" step="0.1" min="0" max="6" value="4">
-          <div>max</div>
+          <div class="left-label">off</div>
+          <input type="range" id="slider-cohesion" step="0.1" min="0" max="10" value="4">
+          <div class="right-label">max</div>
         </div>
-        <div class="slider-label">Cohesion</div>
+        <label class="slider-label" for="slider-cohesion">cohesion</label>
       </div>
 
-      <div class="slider-wrap">
+      <div class="first-group-element-wrapper">
         <div class="slider-range">
-          <div>off</div>
-          <input type="range" name="repulsion" id="slider-repulsion" step="0.1" min="0" max="4" value="1.2">
-          <div>max</div>
+          <div class="left-label">off</div>
+          <input type="range" id="slider-repulsion" step="0.1" min="0" max="4" value="1.5">
+          <div class="right-label">max</div>
         </div>
-        <div class="slider-label">Repulsion</div>
+        <label class="slider-label" for="slider-repulsion">repulsion</label>
       </div>
 
-      <div class="slider-wrap">
+      <div class="first-group-element-wrapper">
         <div class="slider-range">
-          <div>off</div>
-          <input type="range" name="alignment" id="slider-alignment" step="0.1" min="0" max="6" value="3">
-          <div>max</div>
+          <div class="left-label">off</div>
+          <input type="range" id="slider-alignment" step="0.1" min="0" max="6" value="3">
+          <div class="right-label">max</div>
         </div>
-        <div class="slider-label">Alignment</div>
+        <label class="slider-label" for="slider-alignment">alignment</label>
       </div>
 
-      <div class="slider-wrap">
+      <div class="first-group-element-wrapper">
         <div class="slider-range">
-          <div>off</div>
-          <input type="range" name="visibility" id="slider-visibility" step="0.1" min="0" max="100" value="72">
-          <div>max</div>
+          <div class="left-label">off</div>
+          <input type="range" id="slider-visibility" step="0.1" min="0" max="100" value="62">
+          <div class="right-label">max</div>
         </div>
-        <div class="slider-label">Visibility</div>
+        <label class="slider-label" for="slider-visibility">visibility</label>
       </div>
+
+      <div class="first-group-element-wrapper">
+        <div class="slider-range">
+          <div class="left-label">min</div>
+          <input type="range" id="slider-acc" step="0.1" min="0.1" max="5" value="1">
+          <div class="right-label">max</div>
+        </div>
+        <label class="slider-label" for="slider-acc">acc. cap</label>
+      </div>
+
+      <div class="first-group-element-wrapper">
+        <div class="slider-range">
+          <div class="left-label">0%</div>
+          <input type="range" id="slider-opacity" step="0.1" min="0" max="1" value="0.75">
+          <div class="right-label">100%</div>
+        </div>
+        <label class="slider-label" for="slider-opacity">opacity</label>
+      </div>
+
+      <div id="color-wrap" class="first-group-element-wrapper">
+        <input type="color" id="color" value="#12E988">
+        <label class="slider-label" for="color">color</label>
+      </div>
+
+      <div id="toggle-wrap" class="first-group-element-wrapper">
+        <label class="toggle-label">
+          <input type="checkbox" id="path">
+          <span></span>
+          show path
+        </label>
+      </div>
+
 
     </div>
 
-    <button id="reset">↺</button>
+
+    <div class="second-group-wrapper">
+
+      <form id="boids-form" action="">
+        <div class="fields-wrapper">
+
+          <div class="input-field">
+            <input type="number" min="1" max="8" id="boid-size" value="4">
+            <label for="boid-size">size</label>
+          </div>
+
+          <div class="input-field">
+            <input type="number" min="1" max="500" id="boids-number" value="75">
+            <label for="boids-number">entity</label>
+          </div>
+
+        </div>
+
+        <button id="apply"> Apply</button>
+      </form>
+
+      <button id="reset">
+        <span id="reset-span-txt">↺</span>
+      </button>
+    </div>
+
+
 
   </div>
+  <br>
+  <br>
+  <br>
+
+  <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
   <div id="debug-output" class="debug-output">
     INJECT_RAW_VALUES
   </div>
+  <br>
+  <footer class="footer">
+    <p>Made with </p>
+    <span>&#x2764;</span>
+    <p>by</p>
+    <a href="https://github.com/modestAi" target="_blank" rel="noopener noreferrer">
+      @modestAi
+    </a>
+  </footer>
+
+
   <script type="module" src="/src/main.ts"></script>
+
 </body>
 
 </html>

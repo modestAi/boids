@@ -2,15 +2,15 @@ import { Vector2D } from "./Vector2D";
 
 export class Boid {
 
-    readonly MAX_SPEED = 300;
-    readonly MIN_SPEED = 290;
-    readonly MAX_ACCELERATION = 150;
-
+    MIN_SPEED = 300;
+    MAX_ACCELERATION = 250;
     COHESION_FACTOR: number = 0;
     ALIGNMENT_FACTOR: number = 0;
     REPULSION_FACTOR: number = 0;
     VISIBILITY_FACTOR: number = 0;
     VISIBILITY_RADIUS;
+    MAX_SPEED = 400;
+    acc_cap_multiplier = 1;
 
     pos: Vector2D = new Vector2D;
     vel: Vector2D = new Vector2D;
@@ -40,10 +40,13 @@ export class Boid {
         cohersion_factor: number = 1,
         repulsion_factor: number = 1,
         alignment_factor: number = 1,
-        visibility_input: number = 1
+        visibility_input: number = 1,
+        acc_multiplier: number = 1,
+        color: string,
+        opacity: number = 0.75
     ) {
 
-
+        this.acc_cap_multiplier = acc_multiplier;
         //! Initialize Constants with user input
         this.VISIBILITY_FACTOR = 0.35 * visibility_input;
         this.COHESION_FACTOR = 0.25 * cohersion_factor;
@@ -51,7 +54,7 @@ export class Boid {
         this.REPULSION_FACTOR = 2.5 * repulsion_factor;
 
         //! Set VISIBILITY_RADIUS
-        this.setVisibilityRadius();
+        this.setConstants();
 
         //! recalibrate force vec this frame
         this.acc.x = 0;
@@ -74,15 +77,18 @@ export class Boid {
 
         this.capAndScaleVelocity();
 
-
         //!Δx=(vel)*(Δt), 
         //!x+=Δx
         this.setPosition(deltaT);
 
+
+
+        let newc = getColorWithOpacity(color, opacity);
+
         //! render..
         ctx.beginPath();
         ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = "rgba(228, 57, 57, 0.67)";
+        ctx.fillStyle = newc;
         ctx.fill();
 
 
@@ -90,12 +96,15 @@ export class Boid {
             cohesion_v: this.COHESION_FACTOR,
             repulsion_v: this.REPULSION_FACTOR,
             alignment_v: this.ALIGNMENT_FACTOR,
-            visibility_v: this.VISIBILITY_RADIUS
+            visibility_v: this.VISIBILITY_RADIUS,
+            acc_cap_multiplier: this.MAX_ACCELERATION,
+            color_v: newc
         }
     }
 
-    setVisibilityRadius() {
+    setConstants() {
         this.VISIBILITY_RADIUS = 2 * this.VISIBILITY_FACTOR * this.radius;
+        this.MAX_ACCELERATION *= this.acc_cap_multiplier;
     }
 
     capAcceleration() {
@@ -181,7 +190,6 @@ export class Boid {
         })
     }
 
-
     repelWall() {
         const { width, height } = this.canvas;
         const repulsionZone = 100;
@@ -209,7 +217,6 @@ export class Boid {
             this.vel.y -= forceStrength * wallForce;
         }
     }
-
 
     private handleWallCollison() {
         const { width, height } = this.canvas;
@@ -249,5 +256,21 @@ export class Boid {
 
 
 
+type rgb = {
+    r: number,
+    g: number,
+    b: number,
+}
 
+function getColorWithOpacity(hexColor: string, opacity: number): string {
+    const rgbCol: rgb = hexColToRgbCol(hexColor);
+    const { r, g, b, a } = { r: rgbCol.r, g: rgbCol.g, b: rgbCol.b, a: opacity };
+    return `rgba(${[r, g, b, a].join(',')})`;
+}
 
+function hexColToRgbCol(hexCol: string): rgb {
+    let red = parseInt(hexCol.substring(1, 3), 16);
+    let green = parseInt(hexCol.substring(3, 5), 16);
+    let blue = parseInt(hexCol.substring(5, 7), 16);
+    return { r: red, g: green, b: blue }
+}
