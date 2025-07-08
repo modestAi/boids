@@ -7,8 +7,8 @@ const cohesion = document.getElementById("slider-cohesion") as HTMLInputElement;
 const repulsion = document.getElementById("slider-repulsion") as HTMLInputElement;
 const alignment = document.getElementById("slider-alignment") as HTMLInputElement;
 const visibility = document.getElementById("slider-visibility") as HTMLInputElement;
-const color_selector = document.getElementById("color") as HTMLInputElement;
 const opacity = document.getElementById("slider-opacity") as HTMLInputElement;
+const color_selector = document.getElementById("color") as HTMLInputElement;
 
 const acc_cap = document.getElementById("slider-acc") as HTMLButtonElement;
 const reset = document.getElementById("reset") as HTMLButtonElement;
@@ -55,10 +55,10 @@ function animate(currentTime: DOMHighResTimeStamp) {
   const deltaT = (currentTime - lastTime) / 1000;
   lastTime = currentTime;
 
-  if (!ctx) throw new Error("CONTEXT_LOAD_INVALIDATION_HAS_OCCURED.");
+  if (!ctx) throw new Error("CONTEXT_LOAD_INVALIDATION_HAS_OCCURRED.");
 
   // Read user input
-  const cohersion_value = parseFloat(cohesion.value);
+  const cohesion_value = parseFloat(cohesion.value);
   const repulsion_value = parseFloat(repulsion.value);
   const alignment_value = parseFloat(alignment.value);
   const visibility_value = parseFloat(visibility.value);
@@ -75,7 +75,7 @@ function animate(currentTime: DOMHighResTimeStamp) {
     const vals = boid.update(
       ctx,
       deltaT,
-      cohersion_value,
+      cohesion_value,
       repulsion_value,
       alignment_value,
       visibility_value,
@@ -95,7 +95,7 @@ function animate(currentTime: DOMHighResTimeStamp) {
       alignment_factor : ${alignment_v.toFixed(2)}<br>
       visibility_radius : ${visibility_v.toFixed(2)}px<br>
       acc_cap_multiplier : ${acc_cap_multiplier.toFixed(2)}
-      color_v = ${color_v} ;
+      col_val : ${color_v}
     `;
   }
 

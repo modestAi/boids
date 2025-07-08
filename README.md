@@ -1,3 +1,3 @@
-# Boids Algorithm Visualiser
+# Boids Algorithm Visualizer
 
-Deployed at: [text](https://boidsvisualzier.netlify.app/).
+Deployed at: [boids-simulation.netlify.app]](<https://boids-simulation.netlify.app/>).
