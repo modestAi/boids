@@ -1,3 +1,4 @@
+import { getColorWithOpacity, reduceOpacity, type rgb } from "./ColorUtil";
 import { Vector2D } from "./Vector2D";
 
 export class Boid {
@@ -24,7 +25,7 @@ export class Boid {
   boids: Boid[];
   radius: number;
   canvas: HTMLCanvasElement;
-
+  BoundingClient: DOMRect;
   constructor(
     position: Vector2D,
     velocity: Vector2D,
@@ -38,6 +39,7 @@ export class Boid {
     this.canvas = canvas;
     this.boids = boids;
     this.VISIBILITY_RADIUS = radius * this.VISIBILITY_FACTOR;
+    this.BoundingClient = canvas.getBoundingClientRect();
   }
 
   //* Called Every Frame
@@ -51,9 +53,10 @@ export class Boid {
     acc_multiplier: number = 1,
     color: string,
     opacity: number = 0.75,
-    show_path: boolean
+    show_path: boolean,
+    trail_color: rgb
   ) {
-
+    this.BoundingClient = this.canvas.getBoundingClientRect();
     //! Initialize Constants with user input
     this.VISIBILITY_FACTOR = 0.35 * visibility_input;
     this.COHESION_FACTOR = 0.25 * cohesion_factor;
@@ -68,8 +71,6 @@ export class Boid {
     this.acc.x = 0;
     this.acc.y = 0;
 
-
-
     //!Handle Wall Physics
     this.repelWall();
     this.handleWallCollision();
@@ -79,7 +80,7 @@ export class Boid {
     this.accumulateAlignment();
     this.accumulateCohesion();
 
-    this.capAcceleration(); //! cap acceleration so that the kick isn't too big to vel. vec
+    this.capAcceleration(); //! cap acceleration so that the kick isn't huge to vel. vec.
 
     //!Δvel = (acc)*(Δt) ---> vel+=Δvel
     this.setVelocity(deltaT);
@@ -96,7 +97,7 @@ export class Boid {
     ctx.fillStyle = colorWithOpacity;
     ctx.fill();
 
-    this.manageTrail(ctx, show_path);
+    this.manageTrail(ctx, show_path, trail_color, opacity);
 
     return {
       cohesion_v: this.COHESION_FACTOR,
@@ -109,19 +110,24 @@ export class Boid {
 
   }
 
-  private manageTrail(ctx: CanvasRenderingContext2D, show_path: boolean) {
+  private manageTrail(ctx: CanvasRenderingContext2D, show_path: boolean, trail_color: rgb, opacity: number) {
 
     if (this.pos_buffer.length >= this.POS_BUFFER_CAPACITY) this.pos_buffer.shift();
-    else this.pos_buffer.push(new Vector2D(this.pos.x, this.pos.y));
+    if (this.pos_buffer.length < this.POS_BUFFER_CAPACITY) this.pos_buffer.push(new Vector2D(this.pos.x, this.pos.y));
 
     if (show_path) {
       this.pos_buffer.forEach((p, i) => {
-        if (i > 10) {
-          let lastPos = this.pos_buffer[i - 1];
+        if (i > this.radius * 2) {
+          const lastPos = this.pos_buffer[i - 1];
           ctx.beginPath();
           ctx.moveTo(lastPos.x, lastPos.y);
           ctx.lineTo(p.x, p.y);
-          ctx.strokeStyle = reduceOpacity({ r: 224, g: 23, b: 123 }, 1, i / 1000);
+
+          ctx.strokeStyle = reduceOpacity(
+            trail_color,
+            opacity,
+            1 - i / this.POS_BUFFER_CAPACITY
+          );
           ctx.stroke();
         }
       });
@@ -218,7 +224,7 @@ export class Boid {
   }
 
   repelWall() {
-    const { width, height } = this.canvas;
+
     const repulsionZone = 100;
     const wallForce = this.WALL_REPULSION_FORCE;
 
@@ -228,9 +234,9 @@ export class Boid {
       this.vel.x += forceStrength * wallForce;
     }
     // Right wall
-    else if (this.pos.x > width - repulsionZone) {
+    else if (this.pos.x > this.BoundingClient.width - repulsionZone) {
       const forceStrength =
-        (this.pos.x - (width - repulsionZone)) / repulsionZone;
+        (this.pos.x - (this.BoundingClient.width - repulsionZone)) / repulsionZone;
       this.vel.x -= forceStrength * wallForce;
     }
 
@@ -240,18 +246,18 @@ export class Boid {
       this.vel.y += forceStrength * wallForce;
     }
     // Bottom wall
-    else if (this.pos.y > height - repulsionZone) {
-      const forceStrength = (this.pos.y - (height - repulsionZone)) / repulsionZone;
+    else if (this.pos.y > this.BoundingClient.height - repulsionZone) {
+      const forceStrength = (this.pos.y - (this.BoundingClient.height - repulsionZone)) / repulsionZone;
       this.vel.y -= forceStrength * wallForce;
     }
   }
 
   private handleWallCollision() {
-    const { width, height } = this.canvas;
+
 
     // X bounds
-    if (this.pos.x + this.radius > width) {
-      this.pos.x = width - this.radius;
+    if (this.pos.x + this.radius > this.BoundingClient.width) {
+      this.pos.x = this.BoundingClient.width - this.radius;
       this.vel.x *= -1.02;
     } else if (this.pos.x - this.radius < 0) {
       this.pos.x = this.radius;
@@ -259,8 +265,8 @@ export class Boid {
     }
 
     // Y bounds
-    if (this.pos.y + this.radius > height) {
-      this.pos.y = height - this.radius;
+    if (this.pos.y + this.radius > this.BoundingClient.height) {
+      this.pos.y = this.BoundingClient.height - this.radius;
       this.vel.y *= -1.04;
     } else if (this.pos.y - this.radius < 0) {
       this.pos.y = this.radius;
@@ -281,31 +287,4 @@ export class Boid {
   }
 }
 
-type rgb = {
-  r: number;
-  g: number;
-  b: number;
-};
 
-function getColorWithOpacity(hexColor: string, opacity: number): string {
-  const rgbCol: rgb = hexColToRgbCol(hexColor);
-  const { r, g, b, a } = { r: rgbCol.r, g: rgbCol.g, b: rgbCol.b, a: opacity };
-  return `rgba(${[r, g, b, a].join(",")})`;
-}
-
-function hexColToRgbCol(hexCol: string): rgb {
-  const red = parseInt(hexCol.substring(1, 3), 16);
-  const green = parseInt(hexCol.substring(3, 5), 16);
-  const blue = parseInt(hexCol.substring(5, 7), 16);
-  return { r: red, g: green, b: blue };
-}
-
-function reduceOpacity(val: rgb, opacity: number, subFactor: number) {
-
-  const { r, g, b } = val;
-  const a = opacity - subFactor;
-
-
-  return `rgba(${[r, g, b, a].join(",")})`;
-
-}

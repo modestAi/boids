@@ -1,4 +1,5 @@
 import { boidsCreator } from "./BoidsManager";
+import { getTrailColor } from "./ColorUtil";
 
 const canvas = document.getElementById("boids-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d");
@@ -10,21 +11,21 @@ const visibility = document.getElementById("slider-visibility") as HTMLInputElem
 const opacity = document.getElementById("slider-opacity") as HTMLInputElement;
 const color_selector = document.getElementById("color") as HTMLInputElement;
 const checkbox = document.getElementById("path") as HTMLInputElement;
+const acc_cap = document.getElementById("slider-acc") as HTMLInputElement;
 
-const acc_cap = document.getElementById("slider-acc") as HTMLButtonElement;
 const reset = document.getElementById("reset") as HTMLButtonElement;
 
 
-const debugSection = document.getElementById("debug-output") as HTMLDivElement;
+const debugSection = document.getElementById("debug-value-field") as HTMLDivElement;
 
-// Resize canvas properly
+
 const rect = canvas.getBoundingClientRect();
 
-canvas.width = rect.width * devicePixelRatio;
-canvas.height = rect.height * devicePixelRatio;
-ctx?.scale(devicePixelRatio, devicePixelRatio);
+canvas.width = rect.width * devicePixelRatio;    //! SET canvas to use more pixels for bitmap it generates
+canvas.height = rect.height * devicePixelRatio;  //!                       "
+ctx?.scale(devicePixelRatio, devicePixelRatio);  //! SET canvas to use default size conventions with upgraded resolution
 
-// Debug value type
+
 type DebugValues = {
   cohesion_v: number;
   repulsion_v: number;
@@ -45,6 +46,19 @@ let color_string = color_selector.value;
 
 let show_path = false;
 
+let trail_color = getTrailColor(color_string);
+
+function readSliders() {
+  return {
+    cohesion: parseFloat(cohesion.value),
+    repulsion: parseFloat(repulsion.value),
+    alignment: parseFloat(alignment.value),
+    visibility: parseFloat(visibility.value),
+    accCap: parseFloat(acc_cap.value),
+    opacity: parseFloat(opacity.value),
+  };
+}
+
 function animate(currentTime: DOMHighResTimeStamp) {
 
   if (lastTime === 0) {
@@ -59,15 +73,9 @@ function animate(currentTime: DOMHighResTimeStamp) {
   if (!ctx) throw new Error("CONTEXT_LOAD_INVALIDATION_HAS_OCCURRED.");
 
   // Read user input
-  const cohesion_value = parseFloat(cohesion.value);
-  const repulsion_value = parseFloat(repulsion.value);
-  const alignment_value = parseFloat(alignment.value);
-  const visibility_value = parseFloat(visibility.value);
-  const acc_cap_multiplier = parseFloat(acc_cap.value);
-  const opacity_value = parseFloat(opacity.value);
+  const { cohesion, repulsion, alignment, visibility, accCap, opacity } = readSliders();
 
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height); //!CLEAR CANVAS OF PREVIOUS FRAME.
 
   let debugVals: DebugValues | undefined;
 
@@ -75,14 +83,15 @@ function animate(currentTime: DOMHighResTimeStamp) {
     const vals = boid.update(
       ctx,
       deltaT,
-      cohesion_value,
-      repulsion_value,
-      alignment_value,
-      visibility_value,
-      acc_cap_multiplier,
+      cohesion,
+      repulsion,
+      alignment,
+      visibility,
+      accCap,
       color_string,
-      opacity_value,
-      show_path
+      opacity,
+      show_path,
+      trail_color
     );
     if (i === 0) debugVals = vals;
   });
@@ -95,7 +104,7 @@ function animate(currentTime: DOMHighResTimeStamp) {
       repulsion_factor : ${repulsion_v.toFixed(2)}<br>
       alignment_factor : ${alignment_v.toFixed(2)}<br>
       visibility_radius : ${visibility_v.toFixed(2)}px<br>
-      acc_cap_multiplier : ${acc_cap_multiplier.toFixed(2)}
+      acc_cap_multiplier : ${accCap.toFixed(2)}
       col_val : ${color_v}
     `;
   }
@@ -109,12 +118,18 @@ reset.addEventListener("click", (e) => {
 
 color_selector.addEventListener('input', () => {
   color_string = color_selector.value;
+  trail_color = getTrailColor(color_string)
 })
-
 
 checkbox.addEventListener("click", (_) => {
   show_path = checkbox.checked;
 })
 
+
+window.addEventListener("resize", (_) => {
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx?.scale(devicePixelRatio, devicePixelRatio);
+})
 
 requestAnimationFrame(animate);

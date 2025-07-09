@@ -10,11 +10,13 @@
   <meta property="og:description" content="Explore how simple rules lead to complex flocking behavior." />
   <meta property="og:image" content="/preview.png" />
   <meta property="og:type" content="website" />
-  <link rel="icon" href="/drawing.svg" type="image/svg+xml" />
+  <link rel="icon" type="image/x-icon" href="/boid_icon_1.svg">
+
   <link rel="stylesheet" href="src/styles/style.css" />
 </head>
 
 <body>
+
   <header>
     <img src="/boid_icon_1.svg" alt="Boid logo" width="32" height="32" />
     <h1 class="title"> Flocking <a target="_blank" href="https://en.wikipedia.org/wiki/Boids"> Boids </a>
@@ -22,10 +24,12 @@
   </header>
 
   <main>
+
     <div class="canvas-container">
       <canvas id="boids-canvas"></canvas>
       <p>Flocking Behavior Visualizer</p>
     </div>
+
     <div class="boid-controller-wrapper">
       <div class="first-group-wrapper">
         <div class="first-group-element-wrapper">
@@ -105,12 +109,12 @@
         </button>
       </div>
     </div>
-    <br />
-    <br />
-    <br />
-    <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
-    <div id="debug-output" class="debug-output"> INJECT_RAW_VALUES </div>
-    <br />
+
+    <div class="debug-section">
+      <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
+      <div id="debug-value-field" class="debug-output"> INJECT_RAW_VALUES </div>
+    </div>
+
   </main>
   <footer class="footer">
     <p>Made with</p>
