@@ -20,18 +20,15 @@ let min_disable = 220;
 let max_disable = 280;
 
 /**
- * Computes a suitable hue that avoids a specific range.
+ * Computes a hue that avoids a disabled range by wrapping or offsetting.
  * @param hue - Original hue value (0–360)
  * @returns A new hue that avoids the disabled hue range
  */
 function getHueForTrail(hue: number): number {
-  let hue2 = hue;
   if (hue > min_disable && hue < max_disable) {
-    hue2 += (max_disable - hue) + min_disable;
-  } else {
-    hue2 += 100;
+    return (hue + (max_disable - hue) + min_disable) % 360;
   }
-  return hue2 % 360;
+  return (hue + 100) % 360;
 }
 
 /**
@@ -47,7 +44,7 @@ function hexToRgb(hexCol: string): rgb {
 }
 
 /**
- * Converts a hex color string to HSL.
+ * Converts a hex color string to an HSL object.
  * @param hex - A 6-digit hex color string, with or without the `#`
  * @returns An HSL object with hue, saturation, and lightness
  */
@@ -85,12 +82,12 @@ function hexToHsl(hex: string): hsl {
   return {
     h: Math.round(h),
     s: +(s * 100).toFixed(1),
-    l: +(l * 100).toFixed(1)
+    l: +(l * 100).toFixed(1),
   };
 }
 
 /**
- * Converts an HSL color to an RGB color.
+ * Converts an HSL color object to an RGB object.
  * @param hsl_col - HSL color object
  * @returns RGB color object
  */
@@ -103,7 +100,7 @@ function hslToRgb(hsl_col: hsl): rgb {
   const X = C * (1 - Math.abs((h / 60) % 2 - 1));
   const m = l - C / 2;
 
-  let r1: number, g1: number, b1: number;
+  let r1 = 0, g1 = 0, b1 = 0;
 
   if (h < 60) [r1, g1, b1] = [C, X, 0];
   else if (h < 120) [r1, g1, b1] = [X, C, 0];
@@ -112,51 +109,51 @@ function hslToRgb(hsl_col: hsl): rgb {
   else if (h < 300) [r1, g1, b1] = [X, 0, C];
   else[r1, g1, b1] = [C, 0, X];
 
-  const r = Math.round((r1 + m) * 255);
-  const g = Math.round((g1 + m) * 255);
-  const b = Math.round((b1 + m) * 255);
-
-  return { r, g, b };
+  return {
+    r: Math.round((r1 + m) * 255),
+    g: Math.round((g1 + m) * 255),
+    b: Math.round((b1 + m) * 255),
+  };
 }
 
-
-//TODO: Implement
 /**
- * Generates a color based on the original hex string with adjusted hue.
- * @param str - A hex color string
- * @returns An RGB object with the modified hue
+ * Generates a trail color from a base hex string.
+ * - If lightness is very low (near black), increase it to avoid invisible trails.
+ * - Otherwise, adjust the hue to offset trail appearance.
  */
 export function getTrailColor(str: string): rgb {
-  let { h, s, l } = hexToHsl(str);
-  let new_hue = getHueForTrail(h);
-  return hslToRgb({ h: new_hue, s, l });
+  const hslVal = hexToHsl(str);
+  const new_hue = getHueForTrail(hslVal.h);
+  if (hslVal.l < 17) {
+    return hslToRgb({
+      h: new_hue,
+      s: hslVal.s,
+      l: Math.min(hslVal.l + 20, 100),
+    });
+  } else {
+    return hslToRgb({ h: new_hue, s: hslVal.s, l: hslVal.l });
+  }
 }
 
-
 /**
- * Adds opacity to a hex color and returns an `rgba(...)` string.
+ * Converts a hex color to an rgba(...) string with specified opacity.
  * @param hexColor - A 6-digit hex color string
  * @param opacity - Opacity value between 0 and 1
  * @returns An rgba(...) string
  */
 export function getColorWithOpacity(hexColor: string, opacity: number): string {
-  const rgbCol: rgb = hexToRgb(hexColor);
-  const { r, g, b, a } = { r: rgbCol.r, g: rgbCol.g, b: rgbCol.b, a: opacity };
-  return `rgba(${[r, g, b, a].join(",")})`;
+  const { r, g, b } = hexToRgb(hexColor);
+  return `rgba(${r},${g},${b},${opacity})`;
 }
-
 
 /**
- * Reduces the opacity of a given RGB value and returns an `rgba(...)` string.
+ * Returns a color string with dynamically reduced opacity.
  * @param val - RGB color object
- * @param opacity - Initial opacity (0–1)
- * @param subFactor - Amount to subtract from opacity(0-1).
- * @returns An rgba(...) string with reduced opacity
+ * @param opacity - Base opacity (0–1)
+ * @param subFactor - Fade factor (0–1)
+ * @returns A color string in rgba(...) format
  */
 export function reduceOpacity(val: rgb, opacity: number, subFactor: number): string {
-  let { r, g, b } = val;
-  let alpha = opacity * (1 - subFactor);
-  return `rgba(${[r, g, b, alpha].join(",")})`;
+  const alpha = opacity * (1 - subFactor);
+  return `rgba(${val.r},${val.g},${val.b},${alpha})`;
 }
-
-
