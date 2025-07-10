@@ -24,7 +24,7 @@ export class Boid {
   ACC_CAP_MULTIPLIER = 1;
 
   /** Force applied to repel from canvas boundaries */
-  WALL_REPULSION_FORCE = 69;
+  WALL_REPULSION_FORCE = 80;
 
   POS_BUFFER_CAPACITY = 60;
   POS_BUFFER: Vector2D[] = [];
@@ -92,6 +92,7 @@ export class Boid {
     show_path: boolean,
     trail_color: rgb
   ) {
+
     this.BoundingClient = this.canvas.getBoundingClientRect();
 
     this.VISIBILITY_FACTOR = 0.35 * visibility_input;
@@ -117,14 +118,15 @@ export class Boid {
     this.capAndScaleVelocity();
     this.setPosition(deltaT);
 
-    const colorWithOpacity = getColorWithOpacity(color, opacity);
+    const colorWithOpacity = getColorWithOpacity(color, opacity); //! Get the boid's opacity and combine it with its color to apply to the boid itself
 
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
     ctx.fillStyle = colorWithOpacity;
     ctx.fill();
 
-    this.manageTrail(ctx, show_path, trail_color, opacity);
+    this.manageTrail(ctx, show_path, trail_color, opacity); //! Forward the trail_color to the trail manager for rendering
+
 
     return {
       cohesion_v: this.COHESION_FACTOR,
@@ -146,8 +148,7 @@ export class Boid {
     opacity: number
   ) {
     if (this.POS_BUFFER.length >= this.POS_BUFFER_CAPACITY) this.POS_BUFFER.shift();
-    if (this.POS_BUFFER.length < this.POS_BUFFER_CAPACITY)
-      this.POS_BUFFER.push(new Vector2D(this.pos.x, this.pos.y));
+    if (this.POS_BUFFER.length < this.POS_BUFFER_CAPACITY) this.POS_BUFFER.push(new Vector2D(this.pos.x, this.pos.y));
 
     if (show_path) {
       this.POS_BUFFER.forEach((p, i) => {
@@ -157,7 +158,8 @@ export class Boid {
           ctx.moveTo(lastPos.x, lastPos.y);
           ctx.lineTo(p.x, p.y);
 
-          ctx.strokeStyle = reduceOpacity_ManageLightness(trail_color, opacity, 1 - i / this.POS_BUFFER_CAPACITY);
+          ctx.strokeStyle = reduceOpacity_ManageLightness(trail_color, opacity, 1 - i / this.POS_BUFFER_CAPACITY); //* Decrease opacity proportionally to position age, then derive RGB with hue control
+
           ctx.stroke();
         }
       });
@@ -259,16 +261,18 @@ export class Boid {
    * Applies repulsion force when close to canvas walls.
    */
   private repelWall() {
-    const zone = 100;
+
     const force = this.WALL_REPULSION_FORCE;
 
-    if (this.pos.x < zone) this.vel.x += ((zone - this.pos.x) / zone) * force;
-    else if (this.pos.x > this.BoundingClient.width - zone)
-      this.vel.x -= ((this.pos.x - (this.BoundingClient.width - zone)) / zone) * force;
 
-    if (this.pos.y < zone) this.vel.y += ((zone - this.pos.y) / zone) * force;
-    else if (this.pos.y > this.BoundingClient.height - zone)
-      this.vel.y -= ((this.pos.y - (this.BoundingClient.height - zone)) / zone) * force;
+    const zoneW = this.BoundingClient.width / 4;
+    if (this.pos.x < zoneW) this.vel.x += ((zoneW - this.pos.x) / zoneW) * force;
+    else if (this.pos.x > this.BoundingClient.width - zoneW)
+      this.vel.x -= ((this.pos.x - (this.BoundingClient.width - zoneW)) / zoneW) * force;
+    const zoneH = this.BoundingClient.height / 4;
+    if (this.pos.y < zoneH) this.vel.y += ((zoneH - this.pos.y) / zoneH) * force;
+    else if (this.pos.y > this.BoundingClient.height - zoneH)
+      this.vel.y -= ((this.pos.y - (this.BoundingClient.height - zoneH)) / zoneH) * force;
   }
 
   /**

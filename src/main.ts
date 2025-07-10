@@ -42,14 +42,33 @@ type DebugValues = {
 const BOID_RADIUS = 4;
 const NO_OF_BOIDS = 30;
 
+function getPathSettingFromLocalStorage(): boolean {
+  const storageVal = window.localStorage.getItem("show_path");
+  if (storageVal === "true") {
+    checkbox.checked = true;
+    return true
+  }
+  else return checkbox.checked;
+}
+
+function getColorSettingFromLocalStorage(): string {
+
+  const storageVal = window.localStorage.getItem("boid_color");
+  if (storageVal !== null) {
+    color_selector.value = storageVal;
+    return storageVal
+  }
+  else return color_selector.value;
+}
+
 // Initialize boids
 export const boids = boidsCreator(NO_OF_BOIDS, BOID_RADIUS, canvas);
 
-let lastTime: DOMHighResTimeStamp = 0;
-let color_string = color_selector.value;
-let show_path = false;
-let trail_color = getTrailColor(color_string);
 
+let lastTime: DOMHighResTimeStamp = 0;
+let color_string = getColorSettingFromLocalStorage();
+let show_path = getPathSettingFromLocalStorage();
+let trail_color = getTrailColor(color_string);
 /**
  * Reads current slider values from the DOM.
  * @returns An object containing simulation parameters.
@@ -100,7 +119,8 @@ function animate(currentTime: DOMHighResTimeStamp) {
       color_string,
       opacity,
       show_path,
-      trail_color
+      trail_color //* trail_color is computed based on the boid's input color, as handled by the variable above function scope
+
     );
     if (i === 0) debugVals = vals; // Show first boid's debug info for each frame
   });
@@ -117,7 +137,6 @@ function animate(currentTime: DOMHighResTimeStamp) {
       col_val : ${color_v}
     `;
   }
-
   requestAnimationFrame(animate);
 }
 
@@ -135,13 +154,17 @@ reset.addEventListener("click", (e) => {
 color_selector.addEventListener("input", () => {
   color_string = color_selector.value;
   trail_color = getTrailColor(color_string);
+  window.localStorage.setItem("boid_color", color_string)
 });
 
 /**
  * Toggles trail visibility for boids.
  */
 checkbox.addEventListener("click", (_) => {
+  const ls = window.localStorage;
+
   show_path = checkbox.checked;
+  ls.setItem("show_path", `${show_path}`);
 });
 
 /**
