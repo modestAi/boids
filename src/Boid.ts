@@ -8,8 +8,9 @@ export class Boid {
   MIN_SPEED = 300;
   MAX_SPEED = 375;
   /** Maximum acceleration cap (modifiable via multiplier) */
-  MAX_ACCELERATION = 260;
+  MAX_ACCELERATION = 1;
 
+  BASE_ACC_MAX = 260;
   COHESION_FACTOR = 0;
   ALIGNMENT_FACTOR = 0;
   REPULSION_FACTOR = 0;
@@ -37,8 +38,6 @@ export class Boid {
   radius: number;
 
   canvas: HTMLCanvasElement;
-  BoundingClient: DOMRect; /** DOM bounding box of the canvas for wall collision logic */
-
   /**
    * Constructs a new Boid.
    * @param position Initial position of the boid
@@ -61,7 +60,6 @@ export class Boid {
     this.boids = boids;
 
     this.VISIBILITY_RADIUS = radius * this.VISIBILITY_FACTOR;
-    this.BoundingClient = canvas.getBoundingClientRect();
   }
 
   /**
@@ -92,8 +90,6 @@ export class Boid {
     show_path: boolean,
     trail_color: rgb
   ) {
-
-    this.BoundingClient = this.canvas.getBoundingClientRect();
 
     this.VISIBILITY_FACTOR = 0.35 * visibility_input;
     this.COHESION_FACTOR = 0.25 * cohesion_factor;
@@ -171,7 +167,7 @@ export class Boid {
    */
   private setConstants() {
     this.VISIBILITY_RADIUS = 2 * this.VISIBILITY_FACTOR * this.radius;
-    this.MAX_ACCELERATION *= this.ACC_CAP_MULTIPLIER;
+    this.MAX_ACCELERATION = this.BASE_ACC_MAX * this.ACC_CAP_MULTIPLIER;
   }
 
   /**
@@ -265,21 +261,21 @@ export class Boid {
     const force = this.WALL_REPULSION_FORCE;
 
 
-    const zoneW = this.BoundingClient.width / 4;
+    const zoneW = this.canvas.width / 4;
     if (this.pos.x < zoneW) this.vel.x += ((zoneW - this.pos.x) / zoneW) * force;
-    else if (this.pos.x > this.BoundingClient.width - zoneW)
-      this.vel.x -= ((this.pos.x - (this.BoundingClient.width - zoneW)) / zoneW) * force;
-    const zoneH = this.BoundingClient.height / 4;
+    else if (this.pos.x > this.canvas.width - zoneW)
+      this.vel.x -= ((this.pos.x - (this.canvas.width - zoneW)) / zoneW) * force;
+    const zoneH = this.canvas.height / 4;
     if (this.pos.y < zoneH) this.vel.y += ((zoneH - this.pos.y) / zoneH) * force;
-    else if (this.pos.y > this.BoundingClient.height - zoneH)
-      this.vel.y -= ((this.pos.y - (this.BoundingClient.height - zoneH)) / zoneH) * force;
+    else if (this.pos.y > this.canvas.height - zoneH)
+      this.vel.y -= ((this.pos.y - (this.canvas.height - zoneH)) / zoneH) * force;
   }
 
   /**
    * Bounces the boid off canvas walls.
    */
   private handleWallCollision() {
-    const { width, height } = this.BoundingClient;
+    const { width, height } = this.canvas;
 
     if (this.pos.x + this.radius > width) {
       this.pos.x = width - this.radius;

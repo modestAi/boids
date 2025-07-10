@@ -17,17 +17,18 @@ const visibility = document.getElementById("slider-visibility") as HTMLInputElem
 const opacity = document.getElementById("slider-opacity") as HTMLInputElement;
 const color_selector = document.getElementById("color") as HTMLInputElement;
 const checkbox = document.getElementById("path") as HTMLInputElement;
+const acc_cap = document.getElementById("slider-acc") as HTMLInputElement;
 
-const acc_cap = document.getElementById("slider-acc") as HTMLButtonElement;
 const reset = document.getElementById("reset") as HTMLButtonElement;
 const debugSection = document.getElementById("debug-value-field") as HTMLDivElement;
 
 const rect = canvas.getBoundingClientRect();
 
 //! Scale canvas resolution for high-DPI displays
-canvas.width = rect.width * devicePixelRatio;
-canvas.height = rect.height * devicePixelRatio;
-ctx?.scale(devicePixelRatio, devicePixelRatio);
+const pixelRatio = Math.max(devicePixelRatio, 1);
+canvas.width = rect.width * pixelRatio;
+canvas.height = rect.height * pixelRatio;
+ctx?.scale(pixelRatio, pixelRatio);
 
 /** Interface for exposing debug data */
 type DebugValues = {
@@ -171,9 +172,7 @@ checkbox.addEventListener("click", (_) => {
  * Handles window resize to maintain resolution scaling.
  */
 window.addEventListener("resize", (_) => {
-  canvas.width = rect.width * devicePixelRatio;
-  canvas.height = rect.height * devicePixelRatio;
-  ctx?.scale(devicePixelRatio, devicePixelRatio);
+  window.location.reload();
 });
 
 // Kick off animation
