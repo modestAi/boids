@@ -10,8 +10,7 @@
   <meta property="og:description" content="Explore how simple rules lead to complex flocking behavior." />
   <meta property="og:image" content="/preview.png" />
   <meta property="og:type" content="website" />
-  <link rel="icon" type="image/x-icon" href="/boid_icon_1.svg">
-
+  <link rel="icon" type="image/svg+xml" href="/boid_icon_1.svg" />
   <link rel="stylesheet" href="src/styles/style.css" />
 </head>
 
@@ -94,29 +93,22 @@
         <form id="boids-form" action="">
           <div class="fields-wrapper">
             <div class="input-field">
-              <input type="number" min="4" max="12" id="boid-size" value="4" />
+              <input type="number" min="4" max="12" id="boid-size" value="4" autocomplete="off" />
               <label for="boid-size">size</label>
             </div>
             <div class="input-field">
-              <input type="number" min="1" max="90" id="boids-number" value="50" />
+              <input type="number" min="1" max="90" id="boids-number" value="50" autocomplete="off" />
               <label for="boids-number">entity </label>
             </div>
           </div>
-          <button id="apply">Apply</button>
+          <button id="apply" type="submit">Apply</button>
         </form>
-        <button id="reset">
+        <button id="reset" aria-label="Reset simulation">
           <span id="reset-span-txt">↺</span>
         </button>
       </div>
     </div>
 
-    <details>
-      <summary>Debug Section </summary>
-      <div class="debug-section">
-        <h6 class="debug-output">PARAMETERIZATION_CONSTS</h6>
-        <div id="debug-value-field" class="debug-output"> INJECT_RAW_VALUES </div>
-      </div>
-    </details>
   </main>
   <footer class="footer">
     <p>Made with</p>

@@ -5,29 +5,25 @@ import { Vector2D } from "./Vector2D";
  * A single Boid entity that simulates flocking behavior on an HTML canvas.
  */
 export class Boid {
+
+
+  // === Constants ===
   MIN_SPEED = 300;
   MAX_SPEED = 400;
-  /** Maximum acceleration cap (modifiable via multiplier) */
-  MAX_ACCELERATION = 1;
-
   BASE_ACC_MAX = 260;
+  WALL_REPULSION_FORCE = 50;
+  POS_BUFFER_CAPACITY = 45;
+
+  // === Dynamic Factors (Scaled Every Frame) ===
+  MAX_ACCELERATION = 1;
   COHESION_FACTOR = 0;
   ALIGNMENT_FACTOR = 0;
   REPULSION_FACTOR = 0;
-
-  /** Raw visibility scaling factor */
   VISIBILITY_FACTOR = 0;
 
   /** Visibility radius based on scaling and boid size */
   VISIBILITY_RADIUS: number;
 
-  /** Acceleration multiplier from user input */
-  ACC_CAP_MULTIPLIER = 1;
-
-  /** Force applied to repel from canvas boundaries */
-  WALL_REPULSION_FORCE = 50;
-
-  POS_BUFFER_CAPACITY = 60;
   POS_BUFFER: Vector2D[] = [];
 
   pos: Vector2D = new Vector2D();
@@ -90,15 +86,16 @@ export class Boid {
     opacity = 0.75,
     show_path: boolean,
     trail_color: rgb
-  ) {
+  ): void {
 
-    this.VISIBILITY_FACTOR = 0.35 * visibility_input;
-    this.COHESION_FACTOR = 0.25 * cohesion_factor;
-    this.ALIGNMENT_FACTOR = 0.75 * alignment_factor;
-    this.REPULSION_FACTOR = 2.5 * repulsion_factor;
-    this.ACC_CAP_MULTIPLIER = acc_multiplier;
+    this.updateFrameConstants({
+      visibility_input,
+      cohesion_factor,
+      alignment_factor,
+      repulsion_factor,
+      acc_multiplier
+    });
 
-    this.setConstants();
 
     this.acc.x = this.acc.y = 0;
 
@@ -115,61 +112,75 @@ export class Boid {
     this.capAndScaleVelocity();
     this.setPosition(deltaT);
 
-    const colorWithOpacity = getColorWithOpacity(color, opacity); //! Get the boid's opacity and combine it with its color to apply to the boid itself
+    if (!ctx) return;
 
+    this.drawBoid(ctx, getColorWithOpacity(color, opacity)); //! Get the boid's opacity and combine it with its color to apply to the boid itself
+    this.drawTrail(ctx, show_path, trail_color, opacity); //! Forward the trail_color to the trail manager for rendering
+
+  }
+
+  private drawBoid(ctx: CanvasRenderingContext2D, color: string) {
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = colorWithOpacity;
+    ctx.fillStyle = color;
     ctx.fill();
+  }
 
-    this.manageTrail(ctx, show_path, trail_color, opacity); //! Forward the trail_color to the trail manager for rendering
+  private updateFrameConstants({
+    visibility_input,
+    cohesion_factor,
+    alignment_factor,
+    repulsion_factor,
+    acc_multiplier,
+  }: {
+    visibility_input: number;
+    cohesion_factor: number;
+    alignment_factor: number;
+    repulsion_factor: number;
+    acc_multiplier: number;
+  }) {
+    this.VISIBILITY_FACTOR = 0.35 * visibility_input;
+    this.COHESION_FACTOR = 0.25 * cohesion_factor;
+    this.ALIGNMENT_FACTOR = 0.75 * alignment_factor;
+    this.REPULSION_FACTOR = 2.5 * repulsion_factor;
 
-
-    return {
-      cohesion_v: this.COHESION_FACTOR,
-      repulsion_v: this.REPULSION_FACTOR,
-      alignment_v: this.ALIGNMENT_FACTOR,
-      visibility_v: this.VISIBILITY_RADIUS,
-      acc_cap_multiplier: this.MAX_ACCELERATION,
-      color_v: colorWithOpacity,
-      buffer: this.POS_BUFFER.length
-    };
+    this.VISIBILITY_RADIUS = 2 * this.VISIBILITY_FACTOR * this.radius;
+    this.MAX_ACCELERATION = this.BASE_ACC_MAX * acc_multiplier
   }
 
   /**
    * Handles rendering of the boid's trail if enabled.
    */
-  private manageTrail(
+  private drawTrail(
     ctx: CanvasRenderingContext2D,
     show_path: boolean,
     trail_color: rgb,
     opacity: number
   ) {
-    if (this.POS_BUFFER.length >= this.POS_BUFFER_CAPACITY) this.POS_BUFFER.shift();
-    if (this.POS_BUFFER.length < this.POS_BUFFER_CAPACITY) this.POS_BUFFER.push(new Vector2D(this.pos.x, this.pos.y));
+    if (this.POS_BUFFER.length === this.POS_BUFFER_CAPACITY) this.POS_BUFFER.shift();
+
+    this.POS_BUFFER.push(new Vector2D(this.pos.x, this.pos.y));
 
     if (show_path) {
-      this.POS_BUFFER.forEach((p, i) => {
-        if (i > this.radius * 2) {
-          const lastPos = this.POS_BUFFER[i - 1];
-          ctx.beginPath();
-          ctx.moveTo(lastPos.x, lastPos.y);
-          ctx.lineTo(p.x, p.y);
-          ctx.strokeStyle = reduceOpacity_ManageLightness(trail_color, opacity, 1 - i / this.POS_BUFFER_CAPACITY); //* Decrease opacity proportionally to position age, then derive RGB with hue control
-          ctx.stroke();
-        }
-      });
+      for (let i = 1; i < this.POS_BUFFER.length; i++) {
+        if (i < this.radius * 2) continue;         // Delay drawing trail until enough distance (or age) has passed
+
+        const last = this.POS_BUFFER[i - 1];
+        const curr = this.POS_BUFFER[i];
+
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(curr.x, curr.y);
+        ctx.strokeStyle = reduceOpacity_ManageLightness(
+          trail_color,
+          opacity,
+          1 - i / this.POS_BUFFER_CAPACITY
+        );
+        ctx.stroke();
+      }
     }
-  }
 
-  /**
-   * Updates acceleration and visibility constants.
-   */
-  private setConstants() {
-    this.VISIBILITY_RADIUS = 2 * this.VISIBILITY_FACTOR * this.radius;
-    this.MAX_ACCELERATION = this.BASE_ACC_MAX * this.ACC_CAP_MULTIPLIER;
   }
-
   /**
    * Caps acceleration vector magnitude while preserving direction.
    */
@@ -201,7 +212,8 @@ export class Boid {
     let sumX = 0, sumY = 0, count = 0;
 
     this.boids.forEach((boid) => {
-      const dist = this.distance(this, boid);
+      const dist = Vector2D.distance(this.pos, boid.pos);
+
       if (boid !== this && dist < this.VISIBILITY_RADIUS) {
         sumX += boid.vel.x;
         sumY += boid.vel.y;
@@ -223,7 +235,7 @@ export class Boid {
     let sumX = 0, sumY = 0, count = 0;
 
     this.boids.forEach((boid) => {
-      const dist = this.distance(this, boid);
+      const dist = Vector2D.distance(this.pos, boid.pos);
       if (boid !== this && dist < this.VISIBILITY_RADIUS) {
         sumX += boid.pos.x;
         sumY += boid.pos.y;
@@ -243,7 +255,7 @@ export class Boid {
    */
   private accumulateRepulsion() {
     this.boids.forEach((boid) => {
-      const dist = this.distance(this, boid);
+      const dist = Vector2D.distance(this.pos, boid.pos);
       if (boid !== this && dist < this.VISIBILITY_RADIUS) {
         const force = this.REPULSION_FACTOR / (dist + 1);
         const dir = new Vector2D(this.pos.x - boid.pos.x, this.pos.y - boid.pos.y);
@@ -317,10 +329,4 @@ export class Boid {
     this.vel.setScaledAddition(this.acc, deltaT);
   }
 
-  /**
-   * Calculates Euclidean distance between two boids.
-   */
-  private distance(b1: Boid, b2: Boid): number {
-    return Math.hypot(b1.pos.x - b2.pos.x, b1.pos.y - b2.pos.y);
-  }
 }

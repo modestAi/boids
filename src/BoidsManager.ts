@@ -9,32 +9,29 @@ import { Vector2D } from "./Vector2D";
  * - A random angle and speed vector
  * - A shared reference to the boid group (for interaction)
  *
- * @param {number} numOfBalls - Number of boids to create
+ * @param {number} numBoids - Number of boids to create
  * @param {number} radius - Radius of each boid (used for spacing and collision)
  * @param {HTMLCanvasElement} canvas - Canvas for boundary constraints
  * @returns {Boid[]} An array of initialized Boid instances
  */
 export function boidsCreator(
-  numOfBalls: number,
+  numBoids: number,
   radius: number,
   canvas: HTMLCanvasElement
 ): Boid[] {
   let boidsCollection: Boid[] = [];
 
-  let width = canvas.getBoundingClientRect().width;
-  let height = canvas.getBoundingClientRect().height;
-
+  const { width, height } = canvas.getBoundingClientRect();
   let border = radius * 2;
 
-
-  for (let i = 1; i <= numOfBalls; i++) {
+  for (let i = 0; i < numBoids; i++) {
     const position = new Vector2D(
-      randNum(border, width - border),
-      randNum(border, height - border)
+      randFloatNum(border, width - border),
+      randFloatNum(border, height - border)
     );
 
-    const angle = randNum(0, 2 * Math.PI);
-    const speed = randNum(10, 20);
+    const angle = randFloatNum(0, 2 * Math.PI);
+    const speed = randFloatNum(10, 20);
 
     const velocity = new Vector2D(
       Math.cos(angle) * speed,
@@ -52,14 +49,15 @@ export function boidsCreator(
 }
 
 /**
- * Returns a random integer in the range [min, max].
+ * Returns a random float in the range [min, max].
  *
  * @param {number} min - Minimum value (inclusive)
  * @param {number} max - Maximum value (inclusive)
- * @returns {number} A randomly generated integer in the given range
+ * @returns {number} A randomly generated float in the given range
  */
-export function randNum(min: number, max: number): number {
-  let numbers_to_gen = max - min + 1;
-  let temp = Math.floor(Math.random() * numbers_to_gen);
-  return min + temp;
+/**
+ * Returns a random float in the range [min, max).
+ */
+export function randFloatNum(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
 }
