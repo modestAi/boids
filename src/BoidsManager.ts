@@ -21,10 +21,16 @@ export function boidsCreator(
 ): Boid[] {
   let boidsCollection: Boid[] = [];
 
+  let width = canvas.getBoundingClientRect().width;
+  let height = canvas.getBoundingClientRect().height;
+
+  let border = radius * 2;
+
+
   for (let i = 1; i <= numOfBalls; i++) {
     const position = new Vector2D(
-      randNum(radius, canvas.width - radius),
-      randNum(radius, canvas.height - radius)
+      randNum(border, width - border),
+      randNum(border, height - border)
     );
 
     const angle = randNum(0, 2 * Math.PI);
@@ -35,9 +41,11 @@ export function boidsCreator(
       Math.sin(angle) * speed
     );
 
-    boidsCollection.push(
-      new Boid(position, velocity, radius, boidsCollection, canvas)
-    );
+    boidsCollection.push(new Boid(position,
+      velocity,
+      radius,
+      boidsCollection,
+      canvas));
   }
 
   return boidsCollection;

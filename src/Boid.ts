@@ -6,7 +6,7 @@ import { Vector2D } from "./Vector2D";
  */
 export class Boid {
   MIN_SPEED = 300;
-  MAX_SPEED = 375;
+  MAX_SPEED = 400;
   /** Maximum acceleration cap (modifiable via multiplier) */
   MAX_ACCELERATION = 1;
 
@@ -25,7 +25,7 @@ export class Boid {
   ACC_CAP_MULTIPLIER = 1;
 
   /** Force applied to repel from canvas boundaries */
-  WALL_REPULSION_FORCE = 80;
+  WALL_REPULSION_FORCE = 50;
 
   POS_BUFFER_CAPACITY = 60;
   POS_BUFFER: Vector2D[] = [];
@@ -38,6 +38,7 @@ export class Boid {
   radius: number;
 
   canvas: HTMLCanvasElement;
+
   /**
    * Constructs a new Boid.
    * @param position Initial position of the boid
@@ -131,6 +132,7 @@ export class Boid {
       visibility_v: this.VISIBILITY_RADIUS,
       acc_cap_multiplier: this.MAX_ACCELERATION,
       color_v: colorWithOpacity,
+      buffer: this.POS_BUFFER.length
     };
   }
 
@@ -153,9 +155,7 @@ export class Boid {
           ctx.beginPath();
           ctx.moveTo(lastPos.x, lastPos.y);
           ctx.lineTo(p.x, p.y);
-
           ctx.strokeStyle = reduceOpacity_ManageLightness(trail_color, opacity, 1 - i / this.POS_BUFFER_CAPACITY); //* Decrease opacity proportionally to position age, then derive RGB with hue control
-
           ctx.stroke();
         }
       });
@@ -260,22 +260,31 @@ export class Boid {
 
     const force = this.WALL_REPULSION_FORCE;
 
+    // Use the CSS pixel size from getBoundingClientRect
+    const rect = this.canvas.getBoundingClientRect();
+    const zoneW = rect.width / 4;
 
-    const zoneW = this.canvas.width / 4;
-    if (this.pos.x < zoneW) this.vel.x += ((zoneW - this.pos.x) / zoneW) * force;
-    else if (this.pos.x > this.canvas.width - zoneW)
-      this.vel.x -= ((this.pos.x - (this.canvas.width - zoneW)) / zoneW) * force;
-    const zoneH = this.canvas.height / 4;
-    if (this.pos.y < zoneH) this.vel.y += ((zoneH - this.pos.y) / zoneH) * force;
-    else if (this.pos.y > this.canvas.height - zoneH)
-      this.vel.y -= ((this.pos.y - (this.canvas.height - zoneH)) / zoneH) * force;
+    if (this.pos.x < zoneW) {
+      this.vel.x += ((zoneW - this.pos.x) / zoneW) * force;
+    } else if (this.pos.x > rect.width - zoneW) {
+      this.vel.x -= ((this.pos.x - (rect.width - zoneW)) / zoneW) * force;
+    }
+
+    const zoneH = rect.height / 4;
+
+    if (this.pos.y < zoneH) {
+      this.vel.y += ((zoneH - this.pos.y) / zoneH) * force;
+    } else if (this.pos.y > rect.height - zoneH) {
+      this.vel.y -= ((this.pos.y - (rect.height - zoneH)) / zoneH) * force;
+    }
+
   }
 
   /**
    * Bounces the boid off canvas walls.
    */
   private handleWallCollision() {
-    const { width, height } = this.canvas;
+    let { width, height } = this.canvas.getBoundingClientRect();
 
     if (this.pos.x + this.radius > width) {
       this.pos.x = width - this.radius;
