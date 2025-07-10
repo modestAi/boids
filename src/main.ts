@@ -2,7 +2,6 @@
  * Entry point for the Boids simulation.
  * Sets up canvas rendering, UI bindings, simulation loop, and interactivity.
  */
-
 import { boidsCreator } from "./BoidsManager";
 import { getTrailColor } from "./ColorUtil";
 
@@ -18,14 +17,19 @@ const opacity = document.getElementById("slider-opacity") as HTMLInputElement;
 const color_selector = document.getElementById("color") as HTMLInputElement;
 const checkbox = document.getElementById("path") as HTMLInputElement;
 const acc_cap = document.getElementById("slider-acc") as HTMLInputElement;
+const boids_number = document.getElementById("boids-number") as HTMLInputElement;
+const boid_size = document.getElementById("boid-size") as HTMLInputElement;
 
 const reset = document.getElementById("reset") as HTMLButtonElement;
+const applyBtn = document.getElementById("apply") as HTMLButtonElement;
 const debugSection = document.getElementById("debug-value-field") as HTMLDivElement;
+
+window.scrollTo(0, 0);
 
 const rect = canvas.getBoundingClientRect();
 
 //! Scale canvas resolution for high-DPI displays
-const pixelRatio = Math.max(devicePixelRatio, 1);
+const pixelRatio = devicePixelRatio;
 canvas.width = rect.width * pixelRatio;
 canvas.height = rect.height * pixelRatio;
 ctx?.scale(pixelRatio, pixelRatio);
@@ -41,7 +45,7 @@ type DebugValues = {
 };
 
 const BOID_RADIUS = 4;
-const NO_OF_BOIDS = 30;
+const NO_OF_BOIDS = 50;
 
 function getPathSettingFromLocalStorage(): boolean {
   const storageVal = window.localStorage.getItem("show_path");
@@ -63,7 +67,7 @@ function getColorSettingFromLocalStorage(): string {
 }
 
 // Initialize boids
-export const boids = boidsCreator(NO_OF_BOIDS, BOID_RADIUS, canvas);
+export let boidsArray = boidsCreator(NO_OF_BOIDS, BOID_RADIUS, canvas);
 
 
 let lastTime: DOMHighResTimeStamp = 0;
@@ -108,7 +112,7 @@ function animate(currentTime: DOMHighResTimeStamp) {
 
   let debugVals: DebugValues | undefined;
 
-  boids.forEach((boid, i) => {
+  boidsArray.forEach((boid, i) => {
     const vals = boid.update(
       ctx,
       deltaT,
@@ -146,7 +150,11 @@ function animate(currentTime: DOMHighResTimeStamp) {
  */
 reset.addEventListener("click", (e) => {
   e.preventDefault();
-  window.location.reload();
+  let size = BOID_RADIUS;
+  let numbers = NO_OF_BOIDS;
+  cancelAnimationFrame(id);
+  boidsArray = boidsCreator(numbers, size, canvas);
+  id = requestAnimationFrame(animate)
 });
 
 /**
@@ -163,17 +171,24 @@ color_selector.addEventListener("input", () => {
  */
 checkbox.addEventListener("click", (_) => {
   const ls = window.localStorage;
-
   show_path = checkbox.checked;
   ls.setItem("show_path", `${show_path}`);
 });
 
+applyBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  let size = parseInt(boid_size.value);
+  let numbers = parseInt(boids_number.value);
+
+  cancelAnimationFrame(id);
+  boidsArray = boidsCreator(numbers, size, canvas);
+  id = requestAnimationFrame(animate)
+})
+
 /**
  * Handles window resize to maintain resolution scaling.
  */
-window.addEventListener("resize", (_) => {
-  window.location.reload();
-});
+window.addEventListener("resize", (_) => window.location.reload());
 
 // Kick off animation
-requestAnimationFrame(animate);
+let id = requestAnimationFrame(animate);
